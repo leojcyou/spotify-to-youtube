@@ -5,11 +5,11 @@
     "content-scripts": [
         {
             "matches": ["<all_urls>"],
-            "js": ["main.js"]
+            "js": ["Front End/index.js"]
         }
     ],
     "browser_action": {
-        "default_popup": "popup.html",
+        "default_popup": "Front End/popup.html",
         "default_title": "testing with yoUR MOM"
     }
 }
