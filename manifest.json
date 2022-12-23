@@ -1,15 +1,11 @@
 {
-    "manifest_version": 2,
+    "manifest_version": 3,
     "name": "Spotify Playlist to YouTube Playlist Converter",
     "version": "1.0.0",
-    "content-scripts": [
-        {
-            "matches": ["<all_urls>"],
-            "js": ["Front End/index.js"]
-        }
-    ],
-    "browser_action": {
-        "default_popup": "Front End/popup.html",
-        "default_title": "testing with yoUR MOM"
+    "action": {
+        "default_popup": "Front End/popup.html"
     }
+
+
+
 }
