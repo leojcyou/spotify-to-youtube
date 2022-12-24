@@ -1,4 +1,4 @@
-document.getElementById("authenticate_btn").addEventListener("click", sendToAuth);
+document.getElementById("authenticate_btn").addEventListener("click", sendToSpotifyAuth);
 
 function log() {
   console.log("your mom");
@@ -9,6 +9,6 @@ function sendToAuthResponse(response) {
     window.close();
 } 
 
-function sendToAuth() {
-  chrome.runtime.sendMessage({message: "login"}, sendToAuthResponse)
+function sendToSpotifyAuth() {
+  chrome.runtime.sendMessage({message: "spotify login"})
 }

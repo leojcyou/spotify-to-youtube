@@ -9,7 +9,7 @@
         }
     ],
     "background": {
-        "service_worker": "Back End/spotify-background.js"
+        "service_worker": "Back End/service-worker.js"
     },
     "action": {
         "default_popup": "Front End/popup.html",
