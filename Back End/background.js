@@ -1,14 +1,15 @@
-const { response } = require("express")
-const app = express()
-
+//Youtube and Spotify Constants
 const redirectUri = "https://kmiobbpfbiijebejmcmjgjjidpfnlkii.chromiumapp.org/"
-const responseType = "token"
+
 
 //Spotify
+let spotifySignedIn = false
+
 const spotifyClientId = "d502e1de8496425e9a6b3c792ae9df0d"
 const state = "meet" + Math.random().toString(36).substring(2, 15)
 const spotifyScope = "playlist-read-private playlist-read-collaborative"
 const showDialog = "true"
+const responseType = "token"
 
 function createSpotifyUrl() {
     let spotifyUrl = "https://accounts.spotify.com/authorize?"
@@ -33,21 +34,13 @@ function redirectOnFailure(spotifyUrl) {
 
 
 //Youtube
+let googleSignedIn = false
+
+const API_KEY = "AIzaSyDjeaR3-LeYmrAIw-VwQ_V2YuEPd6KHQC0"
+
 function createYoutubeUrl() {
-    const googleClientId = '84930495597-s3cb5s04676ptq9kv3lrdkm76213s1rd.apps.googleusercontent.com'
-
-    let youtubeUrl = 'https://accounts.google.com/o/oauth2/v2/auth'
-    youtubeUrl += "&scope=" + encodeURIComponent('https://www.googleapis.com/auth/youtube')
-    youtubeUrl += "&include_granted_scopes=" + encodeURIComponent('true')
-    youtubeUrl += "&response_type=" + encodeURIComponent(responseType)
-    youtubeUrl += "&state=" + encodeURIComponent(state)
-    youtubeUrl += "&redirect_uri=" + encodeURIComponent(redirectUri) 
-    youtubeUrl += "client_id=" + encodeURIComponent(googleClientId)
-
-    console.log(youtubeUrl)
-    return youtubeUrl
+   
 }
-
 
 //Mainloop
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -56,23 +49,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         {
             url: createSpotifyUrl(),
             interactive: true
-        },
-        redirectOnFailure
+        }, redirectOnFailure
         )
     }
-    return true;
+    if (request.message == "google token"){
+        chrome.identity.getAuthToken({interactive: true}, function(auth_token){console.log(auth_token)});
+        sendResponse(true)
+    }
 })
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.message == "youtube login") {
-        chrome.identity.launchWebAuthFlow(
-        {
-            url: createYoutubeUrl(),
-            interactive: true
-        },
-        redirectOnFailure
-        )
-    }
-    return true;
-})
 

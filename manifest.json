@@ -2,6 +2,14 @@
     "manifest_version": 3,
     "name": "Spotify Playlist to YouTube Playlist Converter",
     "version": "1.0.0",
+    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtNfZ/XYZkukxx9/hX6upNeQOXcS21gBIRqmy1yu1faZOm+2S8PK1vAURESOmQ4UwzLtfOLa+OkOSPDywGbLsiWwMmdn3TtYpeey4DnUOIWjWOSp6VLq5X5yemml1SIF4ifcANmcFJUpl24wteOUBjJUcVZa4ySAuIhHwM+khSE1XVpiwVsJtBv1CG8b/S38WLMm6uy934ITauVg5gJYM32SO2U7DSQPlXFwe7V4lwlSN9TutZNXNGKuglLYk9H/NEhscit/pC3ocQeovQeuygArCDeeSO2p1joCcTrpXgHtIP5WHCofgLpdsYHGrUpl3tV5+cHFjCVbZv4vJzRHw8QIDAQAB",
+    "oauth2": {
+        "client_id": "84930495597-ei65g4o1lu32ebgrbkg3tq761a1jp0qb.apps.googleusercontent.com",
+        "scopes": [
+            "https://www.googleapis.com/auth/youtube",
+            "https://www.googleapis.com/auth/youtube.readonly"
+        ]
+    },
     "content_scripts": [
         {
             "matches": ["<all_urls>"],
@@ -9,13 +17,14 @@
         }
     ],
     "background": {
-        "service_worker": "Back End/service-worker.js"
+        "service_worker": "Back End/background.js"
     },
     "action": {
         "default_popup": "Front End/popup.html",
         "default_title": "Spotify to Youtube"
     },
     "permissions": [
-        "identity"
+        "identity",
+        "identity.email"
     ] 
 }
