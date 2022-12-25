@@ -1,7 +1,7 @@
 document.getElementById("authenticate_btn").addEventListener("click", main);
 
 function log() {
-  console.log("your mom");
+  console.log("your mom"); //this was qianxu, not leo
 }
 
 function sendToAuthResponse(response) {
@@ -32,5 +32,7 @@ function returnFailure(){
 
 function main(){
   sendToAuth("spotify login")
+  //message login and playlist confirmation
   sendToAuth("google token")
+  //message of login confirmation
 }
