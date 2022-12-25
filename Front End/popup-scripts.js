@@ -1,5 +1,4 @@
-document.getElementById("spotify_authenticate_btn").addEventListener("click", sendToSpotifyAuth);
-document.getElementById("google_authenticate_btn").addEventListener("click", sendToGoogleAuth);
+document.getElementById("authenticate_btn").addEventListener("click", main);
 
 function log() {
   console.log("your mom");
@@ -10,12 +9,28 @@ function sendToAuthResponse(response) {
     window.close();
 }
 
-function sendToSpotifyAuth() {
-  chrome.runtime.sendMessage({message: "spotify login"})
+function sendToAuth(message){
+  chrome.runtime.sendMessage({message: message})
+  chrome.runtime.onMessage.addEventListener((request, sender, sendResponse) => {
+    if (request.message == false)
+    {
+      console.log("failed")
+      return false;
+    }
+    else if (request.message == true)
+    {
+      console.log("succeeded")
+      return true;
+    }
+
+  })
 }
 
-function sendToGoogleAuth() {
-  chrome.runtime.sendMessage({message: "google token"})
+function returnFailure(){
+  return
 }
 
-
+function main(){
+  sendToAuth("spotify login")
+  sendToAuth("google token")
+}

@@ -7,18 +7,23 @@
     </head>
 
     <body>
+        <header>
+            <h1>Spotify To Youtube Playlist Migration</h1>
+        </header>
 
-        <h1>Spotify To Youtube Playlist Migration</h1>
-
-        <form>
-            <label for="playlist">Playlist Link:</label><br>
-            <input type="text" id="playlist_link" name="playlist_link"><br>
-        </form>
-
-        <button id = "spotify_authenticate_btn">Spotify</button>
-        <button id = "google_authenticate_btn">Google</button>
-
-        <script src="https://accounts.google.com/gsi/client" onload="console.log('TODO: add onload function')"></script>
+        <div id="text_field">
+            <form>
+                <input type="text" id="playlist_link" placeholder="Your Spotify Playlist Link Here"><br>
+            </form>
+        </div>
+        
+        <div>
+            <button id = "authenticate_btn">Begin Migrating</button>
+        </div>
+        
+        <!-- <button id = "spotify_authenticate_btn">Spotify</button>
+        <button id = "google_authenticate_btn">Google</button> -->
+        
         <script src = "popup-scripts.js"></script>
     
     </body>

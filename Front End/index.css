@@ -1,6 +1,32 @@
 body {
-    margin: 0;
+    background-color: #ffffff;
+    color: black;
+    margin: 0px;
+    padding: 0px;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+
+    width: 400px;
+}
+header {
+    padding: 0.5px;
+    background-color: #EEEEEE;
+
+    text-align: Left;
+    text-indent: 8px;
+    font-size: 8px;
+    font-weight: 100;
+    color: black;
+
+}
+
+input{
+    margin-top:0px;
+    margin: 8px;
+    width: 75%;
     padding: 10px;
-    font-family: Arial, Helvetica, sans-serif;
-    min-width: 400px;
+    color: black;
+}
+
+button {
+    margin:8px;
 }
