@@ -9,7 +9,7 @@ function sendToAuthResponse(response) {
     window.close();
 }
 
-function sendToAuth(message){
+function sendToAuth(message) {
   chrome.runtime.sendMessage({message: message})
   chrome.runtime.onMessage.addEventListener((request, sender, sendResponse) => {
     if (request.message == false)
@@ -26,13 +26,17 @@ function sendToAuth(message){
   })
 }
 
-function returnFailure(){
+function returnFailure() {
   return
 }
 
 function main(){
   sendToAuth("spotify login")
-  //message login and playlist confirmation
-  sendToAuth("google token")
-  //message of login confirmation
+  // message login and playlist confirmation
+
+  // console.log("hello there")
+
+  // sendToAuth("google token")
+
+  // message of login confirmation
 }
