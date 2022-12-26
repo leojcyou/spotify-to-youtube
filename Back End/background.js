@@ -1,5 +1,4 @@
 //Mainloop
-
 const songNames = [];
 const artistNames = [];
 
@@ -79,13 +78,6 @@ async function importPlaylist(token, playlistId){
     }
 
     return;
-    /*
-    JSON PATH
-    items -> track ->
-
-     ===> artists - > name
-     ===> name
-     */
 }
 
 //Youtube
@@ -119,6 +111,27 @@ function googleCallback(token)
     } 
 }
 
+function createPlaylist(playListName){
 
+}
 
+/*
+POST https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet&key=[YOUR_API_KEY] HTTP/1.1
+
+Authorization: Bearer [YOUR_ACCESS_TOKEN]
+Accept: application/json
+Content-Type: application/json
+
+{
+  "snippet": {
+    "playlistId": "YOUR_PLAYLIST_ID",
+    "position": 0,
+    "resourceId": {
+      "kind": "youtube#video",
+      "videoId": "M7FIvfx5J10"
+    }
+  }
+}
+
+*/
 
