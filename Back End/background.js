@@ -57,7 +57,7 @@ function parseUrl(accessUrl){
 }
 
 async function importPlaylist(token, playlistId){//
-    let limit = 1;
+    let limit = 2;
     let playlistUrl = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
 
     const response = await fetch(playlistUrl, {//
@@ -68,7 +68,7 @@ async function importPlaylist(token, playlistId){//
             "Authorization" : "Bearer " + token
         }
     });
-    const data = await response.json();//
+    const data = await response.json();
     console.log(data)
 
     if(data.total < limit) limit = data.total;
@@ -85,7 +85,7 @@ async function importPlaylist(token, playlistId){//
     return;
 }
 
-function spotifyCallback(redirectUrl) {
+async function spotifyCallback(redirectUrl) {
     if (chrome.runtime.lastError || redirectUrl.includes('callback?error=access_denied')){
         console.log("no auth");
     }
@@ -96,7 +96,7 @@ function spotifyCallback(redirectUrl) {
         console.log("authed");
         let spotifyAuthToken = parseUrl(redirectUrl);
         console.log(spotifyAuthToken);
-        importPlaylist(spotifyAuthToken,'7bjBfZIF7ylSBVV0aqAUBx');
+        await importPlaylist(spotifyAuthToken,'7bjBfZIF7ylSBVV0aqAUBx');
         //console.log("hjel;osdfjios")
 
         chrome.identity.getAuthToken(
@@ -110,10 +110,7 @@ function spotifyCallback(redirectUrl) {
 }
 
 //Youtube
-function googleCallback(token)
-{
-    console.log("hello HERE")
-
+async function googleCallback(token) {
     if (chrome.runtime.lastError) {
         console.log("no auth");
     }
@@ -122,8 +119,9 @@ function googleCallback(token)
         let googleAuthToken = token;
         console.log(googleAuthToken);
 
-        searchYoutube(googleAuthToken);
+        await searchYoutube(googleAuthToken);
         console.log("Searching has finished")
+
         createPlaylist(googleAuthToken)
     } 
 }
@@ -138,16 +136,22 @@ async function createPlaylist(token) {
     const response = await fetch(endpointUrl, {
         method: 'POST',
         headers: { 
-            "Accept" : "application/json",
+            "Accept": "application/json",
             "Content-Type": "application/json",
-            "Authorization" : "Bearer" + " " + token
+            "Authorization": "Bearer " + String(token)
         },
-        data: {
-            "snippet":{"title":playlistName}
-        }
+        body: JSON.stringify(
+            {
+                "snippet": {
+                    "title": playlistName
+                }
+            }
+        )
     });
 
     const data = await response.json();
+
+    console.log(data)
     let playlistId = data.id;
     console.log("playlist created " + playlistId)
 
@@ -155,10 +159,9 @@ async function createPlaylist(token) {
 }
 
 async function addSongs(playlistId, token) {
+    let endpointUrl = `https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet&part=id&key=${API_KEY}`
 
-    let endpointUrl = `https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet&key=${API_KEY}`
-    for (let i = 0; i < songNames.length ; i++)
-    {
+    for (let i = 0; i < songNames.length; i++) {
         const response = await fetch(endpointUrl, {
             method: 'POST',
             headers: {
@@ -166,18 +169,25 @@ async function addSongs(playlistId, token) {
                 "Content-Type": "application/json",
                 "Authorization" : "Bearer" + " " + token
             },
-            data: {
-                "snippet": {
-                    "playlistId": playlistId,
-                    "position":i,
-                    "resourceId": {
-                        "kind":"youtube#video",
-                        "videoId":ytIds[i]
+            body: JSON.stringify(
+                {
+                    "snippet": {
+                        "playlistId": playlistId,
+                        "position": i,
+                        "resourceId": {
+                            "kind": "youtube#video",
+                            "videoId": ytIds[i]
+                        }
                     }
                 }
-            }
+            )
         })
-        console.log("added song")
+
+        const data = await response.json()
+
+        console.log(data)
+        console.log("song " + i + " added")
+
         //get the data and check the error code, if failed, print to final screen to tell user x song was not added
     }
 }
@@ -208,4 +218,4 @@ async function searchYoutube(token) {
         ytIds[i] = data.items[0].id.videoId
         console.log(ytIds[i])
     }
-  }
+}
