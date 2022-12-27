@@ -1,6 +1,8 @@
 //Mainloop
 //Google
 const API_KEY = "AIzaSyDjeaR3-LeYmrAIw-VwQ_V2YuEPd6KHQC0"
+const SPOTIFY_PLAYLIST_ID = "7bjBfZIF7ylSBVV0aqAUBx" 
+let playlistName = ""
 
 const songNames = []
 const artistNames = []
@@ -56,6 +58,25 @@ function parseUrl(accessUrl){
     return accessToken;
 }
 
+async function getName(token, playlistId){//
+    let playlistUrl = `https://api.spotify.com/v1/playlists/${playlistId}`;
+
+    const response = await fetch(playlistUrl, {//
+        method: 'GET',
+        headers: { 
+            "Accept" : "application/json",
+            "Content-Type":"application/json",
+            "Authorization" : "Bearer " + token
+        }
+    });
+    const data = await response.json();
+    console.log(data)
+
+    playlistName = data.name + " | Import from Spotify"
+
+    return;
+}
+
 async function importPlaylist(token, playlistId){//
     let limit = 2;
     let playlistUrl = `https://api.spotify.com/v1/playlists/${playlistId}/tracks`;
@@ -96,7 +117,8 @@ async function spotifyCallback(redirectUrl) {
         console.log("authed");
         let spotifyAuthToken = parseUrl(redirectUrl);
         console.log(spotifyAuthToken);
-        await importPlaylist(spotifyAuthToken,'7bjBfZIF7ylSBVV0aqAUBx');
+        await getName(spotifyAuthToken,SPOTIFY_PLAYLIST_ID)
+        await importPlaylist(spotifyAuthToken,SPOTIFY_PLAYLIST_ID);
         //console.log("hjel;osdfjios")
 
         chrome.identity.getAuthToken(
@@ -127,9 +149,9 @@ async function googleCallback(token) {
 }
 
 async function createPlaylist(token) {
-    let d = new Date()
-    let date = d.getFullYear() + "/" + (d.getMonth()+1) + "/" + d.getDate()
-    let playlistName = "Import from Spotify" + " " + date
+    // let d = new Date()
+    // let date = d.getFullYear() + "/" + (d.getMonth()+1) + "/" + d.getDate()
+    // let playlistName = "Import from Spotify" + " " + date
 
     let endpointUrl = `https://youtube.googleapis.com/youtube/v3/playlists?part=snippet&key=${API_KEY}`
 
