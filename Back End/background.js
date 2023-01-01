@@ -1,14 +1,21 @@
 const YOUTUBE_API_KEY = "AIzaSyDjeaR3-LeYmrAIw-VwQ_V2YuEPd6KHQC0"
-const SPOTIFY_PLAYLIST_ID = "7bjBfZIF7ylSBVV0aqAUBx" 
+
 
 const songNames = []
 const artistNames = []
 const youtubeSongIds = []
-
+//https://open.spotify.com/playlist/ 7bjBfZIF7ylSBVV0aqAUBx ?si=f31834df629248ee
+let spotifyPlaylistUrl = ""
+let spotifyPlaylistId = "" 
 let youtubePlaylistName = ""
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.message == "spotify") {
+    if (request.message) {
+
+        spotifyPlaylistUrl = request.message
+        console.log(spotifyPlaylistUrl)
+        spotifyPlaylistId = getPlaylistId(spotifyPlaylistUrl)
+
         chrome.identity.launchWebAuthFlow(
             {
                 url: createSpotifyUrl(),
@@ -26,7 +33,7 @@ async function spotifyCallback(redirectUrl) {
 
     else {
         let spotifyAuthToken = parseUrl(redirectUrl)
-        await importPlaylist(spotifyAuthToken, "7bjBfZIF7ylSBVV0aqAUBx")
+        await importPlaylist(spotifyAuthToken, spotifyPlaylistId)
 
         chrome.identity.getAuthToken(
             {
@@ -49,6 +56,11 @@ async function youtubeCallback(googleAuthToken) {
 }
 
 // Spotify
+function getPlaylistId(playlistUrl){
+    let playlistId = playlistUrl.split("/")[4]
+    playlistId = playlistId.split("?")[0]
+    return playlistId
+}
 
 function createSpotifyUrl() {
     const SPOTIFY_CLIENT_ID = "d502e1de8496425e9a6b3c792ae9df0d"
@@ -78,11 +90,11 @@ function parseUrl(accessUrl) {
 
 async function importPlaylist(spotifyAuthToken, spotifyPlaylistId) {
     let limit = 2
-    let spotifyPlaylistUrl = `https://api.spotify.com/v1/playlists/${spotifyPlaylistId}/tracks`
+    let spotifyEndpointPlaylistUrl = `https://api.spotify.com/v1/playlists/${spotifyPlaylistId}/tracks`
 
     await getName(spotifyAuthToken, spotifyPlaylistId)
 
-    const response = await fetch(spotifyPlaylistUrl, {
+    const response = await fetch(spotifyEndpointPlaylistUrl, {
         method: "GET",
         headers: { 
             "Accept" : "application/json",
@@ -104,9 +116,9 @@ async function importPlaylist(spotifyAuthToken, spotifyPlaylistId) {
 }
 
 async function getName(spotifyAuthToken, spotifyPlaylistId) {
-    let spotifyPlaylistUrl = `https://api.spotify.com/v1/playlists/${spotifyPlaylistId}`
+    let spotifyEndpointPlaylistUrl = `https://api.spotify.com/v1/playlists/${spotifyPlaylistId}`
 
-    const response = await fetch(spotifyPlaylistUrl, {
+    const response = await fetch(spotifyEndpointPlaylistUrl, {
         method: "GET",
         headers: { 
             "Accept" : "application/json",

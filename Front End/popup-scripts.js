@@ -34,7 +34,7 @@ function main() {
     alert("bozo")
   
   else
-    chrome.runtime.sendMessage({message: "spotify"})
+    chrome.runtime.sendMessage({message: input})
 
   // message login and playlist confirmation
 
