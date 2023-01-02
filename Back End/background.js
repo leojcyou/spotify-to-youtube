@@ -4,7 +4,7 @@ const YOUTUBE_API_KEY = "AIzaSyDjeaR3-LeYmrAIw-VwQ_V2YuEPd6KHQC0"
 const songNames = []
 const artistNames = []
 const youtubeSongIds = []
-//https://open.spotify.com/playlist/ 7bjBfZIF7ylSBVV0aqAUBx ?si=f31834df629248ee
+
 let spotifyPlaylistUrl = ""
 let spotifyPlaylistId = "" 
 let youtubePlaylistName = ""
@@ -28,7 +28,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 async function spotifyCallback(redirectUrl) {
     if (chrome.runtime.lastError || redirectUrl.includes("callback?error=access_denied")) {
-        console.log("no auth")
+        sendError("COuld not authenticate with Spotify")
     }
 
     else {
@@ -46,7 +46,7 @@ async function spotifyCallback(redirectUrl) {
 
 async function youtubeCallback(googleAuthToken) {
     if (chrome.runtime.lastError) {
-        console.log("no auth")
+        sendError("Could not authenticate with Google")
     }
 
     else {
@@ -105,13 +105,18 @@ async function importPlaylist(spotifyAuthToken, spotifyPlaylistId) {
 
     const data = await response.json()
 
-    if (data.total < limit) {
-        limit = data.total
+    if(data.error) {
+        sendError("Invalid Playlist Link")
     }
-
-    for (let i = 0; i < limit; i++) {
-        songNames[i] = data.items[i].track.name
-        artistNames[i] = data.items[i].track.artists[0].name
+    else {
+        if (data.total < limit) {
+            limit = data.total
+        }
+    
+        for (let i = 0; i < limit; i++) {
+            songNames[i] = data.items[i].track.name
+            artistNames[i] = data.items[i].track.artists[0].name
+        }
     }
 }
 
@@ -129,7 +134,12 @@ async function getName(spotifyAuthToken, spotifyPlaylistId) {
 
     const data = await response.json()
 
-    youtubePlaylistName = data.name + " | Import from Spotify"
+    if(data.error) {
+        sendError("Invalid Playlist Link")
+    }
+    else {
+        youtubePlaylistName = data.name + " | Import from Spotify"
+    }
 }
 
 async function searchYoutube(googleAuthToken) {
@@ -173,7 +183,7 @@ async function createPlaylist(googleAuthToken) {
     const data = await response.json()
     let youtubePlaylistId = data.id
 
-    addSongs(youtubePlaylistId, googleAuthToken)
+    addSongs(youtubePlaylistId, googleAuthToken) 
 }
 
 async function addSongs(youtubePlaylistId, googleAuthToken) {
@@ -209,4 +219,8 @@ async function addSongs(youtubePlaylistId, googleAuthToken) {
 
 function getKeyword(artist, song) {
     return artist.replace(" ", "%20") + "%20" + song.replace(" ", "%20")
+}
+
+function sendError(message){
+    console.log(message)
 }
