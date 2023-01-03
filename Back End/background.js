@@ -28,7 +28,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 async function spotifyCallback(redirectUrl) {
     if (chrome.runtime.lastError || redirectUrl.includes("callback?error=access_denied")) {
-        sendError("COuld not authenticate with Spotify")
+        sendError("Could not authenticate with Spotify")
     }
 
     else {
@@ -221,6 +221,14 @@ function getKeyword(artist, song) {
     return artist.replace(" ", "%20") + "%20" + song.replace(" ", "%20")
 }
 
-function sendError(message){
-    console.log(message)
+function sendError(message) {
+    chrome.storage.session.set({"err": message})
+    console.log("saved to chrome.storage: " + message)
+
+    // NOTE: trying to make it so that popup window auto-refreshes every time an error occurs, but this below code doesn't work
+    chrome.action.setPopup(
+        {
+            popup: "../Front End/popup.html"
+        }
+    )
 }

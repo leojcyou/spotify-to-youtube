@@ -1,4 +1,10 @@
-document.getElementById("authenticate_btn").addEventListener("click", main);
+document.getElementById("authenticate_btn").addEventListener("click", main)
+
+// NOTE: the below code block only gets called when popup window is refreshed
+chrome.storage.session.get("err", function(result) {
+  document.getElementById("error_message").textContent = result.err
+  console.log("retrieving from storage: " + result.err)
+})
 
 function sendToAuth(message) {
   chrome.runtime.sendMessage({message: message})
@@ -29,6 +35,8 @@ function isValidLink(input) {
 
 function main() {
   let input = document.getElementById("playlist_link").value
+
+
 
   if (!isValidLink(input)) 
     alert("bozo")
