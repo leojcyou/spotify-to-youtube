@@ -1,6 +1,5 @@
 const YOUTUBE_API_KEY = "AIzaSyDjeaR3-LeYmrAIw-VwQ_V2YuEPd6KHQC0"
 
-
 const songNames = []
 const artistNames = []
 const youtubeSongIds = []
@@ -8,6 +7,10 @@ const youtubeSongIds = []
 let spotifyPlaylistUrl = ""
 let spotifyPlaylistId = "" 
 let youtubePlaylistName = ""
+
+chrome.runtime.onInstalled.addListener(() => {
+    chrome.alarms.create("periodic", { periodInMinutes: 0.02 })
+})
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.message) {
@@ -222,13 +225,9 @@ function getKeyword(artist, song) {
 }
 
 function sendError(message) {
-    chrome.storage.session.set({"err": message})
-    console.log("saved to chrome.storage: " + message)
+    chrome.storage.session.set({
+        "err": message
+    })
 
-    // NOTE: trying to make it so that popup window auto-refreshes every time an error occurs, but this below code doesn't work
-    chrome.action.setPopup(
-        {
-            popup: "../Front End/popup.html"
-        }
-    )
+    console.log("saved to chrome.storage: " + message)
 }
