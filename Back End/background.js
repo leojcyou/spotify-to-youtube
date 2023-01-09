@@ -4,20 +4,21 @@ const songNames = []
 const artistNames = []
 const youtubeSongIds = []
 
+let keepRunning = true
 let spotifyPlaylistUrl = ""
 let spotifyPlaylistId = "" 
 let youtubePlaylistName = ""
 
-chrome.runtime.onInstalled.addListener(() => {
-    chrome.alarms.create("periodic", { periodInMinutes: 0.02 })
-})
-
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.message) {
-
         spotifyPlaylistUrl = request.message
-        console.log(spotifyPlaylistUrl)
-        spotifyPlaylistId = getPlaylistId(spotifyPlaylistUrl)
+        getPlaylistId(spotifyPlaylistUrl)
+
+        if (spotifyPlaylistId == false) {
+            keepRunning = false
+            sendError("invalid playlist link inputted.")
+            return
+        }
 
         chrome.identity.launchWebAuthFlow(
             {
@@ -31,12 +32,24 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 async function spotifyCallback(redirectUrl) {
     if (chrome.runtime.lastError || redirectUrl.includes("callback?error=access_denied")) {
-        sendError("Could not authenticate with Spotify")
+        sendError("could not authenticate with Spotify.")
+        return
     }
 
     else {
         let spotifyAuthToken = parseUrl(redirectUrl)
+
+        if (spotifyAuthToken == false) {
+            keepRunning = false
+            sendError("invalid playlist link inputted.")
+            return
+        }
+
         await importPlaylist(spotifyAuthToken, spotifyPlaylistId)
+
+        if (keepRunning == false) {
+            return
+        }
 
         chrome.identity.getAuthToken(
             {
@@ -48,21 +61,39 @@ async function spotifyCallback(redirectUrl) {
 }
 
 async function youtubeCallback(googleAuthToken) {
+    if (keepRunning == false) {
+        return
+    }
+
     if (chrome.runtime.lastError) {
-        sendError("Could not authenticate with Google")
+        sendError("could not authenticate with Google.")
+        return
     }
 
     else {
         await searchYoutube(googleAuthToken)
         createPlaylist(googleAuthToken)
+
+        if (keepRunning == false) {
+            return
+        }
+
+        sendSucessMessage();
     } 
 }
 
 // Spotify
-function getPlaylistId(playlistUrl){
-    let playlistId = playlistUrl.split("/")[4]
-    playlistId = playlistId.split("?")[0]
-    return playlistId
+function getPlaylistId(playlistUrl) {
+    try {
+        spotifyPlaylistId = playlistUrl.split("/")[4]
+        spotifyPlaylistId = spotifyPlaylistId.split("?")[0]
+    }
+
+    catch(e) {
+        spotifyPlaylistId = false
+    }
+
+    return spotifyPlaylistId
 }
 
 function createSpotifyUrl() {
@@ -85,17 +116,23 @@ function createSpotifyUrl() {
 }
 
 function parseUrl(accessUrl) {
-    let accessToken = accessUrl.split("=")[1]
-    accessToken = accessToken.split("&")[0]
+    try {
+        let accessToken = accessUrl.split("=")[1]
+        accessToken = accessToken.split("&")[0]
 
-    return accessToken
+        return accessToken
+    }
+    
+    catch(e) {
+        return false
+    }    
 }
 
 async function importPlaylist(spotifyAuthToken, spotifyPlaylistId) {
     let limit = 2
     let spotifyEndpointPlaylistUrl = `https://api.spotify.com/v1/playlists/${spotifyPlaylistId}/tracks`
 
-    await getName(spotifyAuthToken, spotifyPlaylistId)
+    await getPlaylistName(spotifyAuthToken, spotifyPlaylistId)
 
     const response = await fetch(spotifyEndpointPlaylistUrl, {
         method: "GET",
@@ -108,9 +145,11 @@ async function importPlaylist(spotifyAuthToken, spotifyPlaylistId) {
 
     const data = await response.json()
 
-    if(data.error) {
-        sendError("Invalid Playlist Link")
+    if (data.error) {
+        sendError("Spotify playlist import failed; is this a private playlist that is not shared with your current Spotify account?")
+        keepRunning = false
     }
+
     else {
         if (data.total < limit) {
             limit = data.total
@@ -123,7 +162,7 @@ async function importPlaylist(spotifyAuthToken, spotifyPlaylistId) {
     }
 }
 
-async function getName(spotifyAuthToken, spotifyPlaylistId) {
+async function getPlaylistName(spotifyAuthToken, spotifyPlaylistId) {
     let spotifyEndpointPlaylistUrl = `https://api.spotify.com/v1/playlists/${spotifyPlaylistId}`
 
     const response = await fetch(spotifyEndpointPlaylistUrl, {
@@ -137,12 +176,7 @@ async function getName(spotifyAuthToken, spotifyPlaylistId) {
 
     const data = await response.json()
 
-    if(data.error) {
-        sendError("Invalid Playlist Link")
-    }
-    else {
-        youtubePlaylistName = data.name + " | Import from Spotify"
-    }
+    youtubePlaylistName = data.name + " | Import from Spotify"
 }
 
 async function searchYoutube(googleAuthToken) {
@@ -160,7 +194,13 @@ async function searchYoutube(googleAuthToken) {
 
         const data = await response.json()
 
-        youtubeSongIds[i] = data.items[0].id.videoId
+        if (data.error) {
+            sendError("the track " + songNames[i] + " could not be added.")
+        }
+
+        else {
+            youtubeSongIds[i] = data.items[0].id.videoId
+        }
     }
 }
 
@@ -184,9 +224,16 @@ async function createPlaylist(googleAuthToken) {
     })
 
     const data = await response.json()
-    let youtubePlaylistId = data.id
 
-    addSongs(youtubePlaylistId, googleAuthToken) 
+    if (data.error) {
+        sendError("YouTube playlist creation failed.")
+        keepRunning = false
+    }
+
+    else {
+        let youtubePlaylistId = data.id
+        addSongs(youtubePlaylistId, googleAuthToken) 
+    }
 }
 
 async function addSongs(youtubePlaylistId, googleAuthToken) {
@@ -215,8 +262,6 @@ async function addSongs(youtubePlaylistId, googleAuthToken) {
         })
 
         const data = await response.json()
-
-        //get the data and check the error code, if failed, print to final screen to tell user x song was not added
     }
 }
 
@@ -224,10 +269,22 @@ function getKeyword(artist, song) {
     return artist.replace(" ", "%20") + "%20" + song.replace(" ", "%20")
 }
 
-function sendError(message) {
-    chrome.storage.session.set({
-        "err": message
-    })
+function sendError(errorMessage) {
+    chrome.notifications.create({
+        type: "basic",
+        // TO-DO: EDIT ICONURL
+        iconUrl: "https://images.ctfassets.net/hrltx12pl8hq/3j5RylRv1ZdswxcBaMi0y7/b84fa97296bd2350db6ea194c0dce7db/Music_Icon.jpg",
+        title: "Spotify to YouTube Migration",
+        message: "An error occurred: " + errorMessage,
+    });
+}
 
-    console.log("saved to chrome.storage: " + message)
+function sendSucessMessage() {
+    chrome.notifications.create({
+        type: "basic",
+        // TO-DO: EDIT ICONURL
+        iconUrl: "https://images.ctfassets.net/hrltx12pl8hq/3j5RylRv1ZdswxcBaMi0y7/b84fa97296bd2350db6ea194c0dce7db/Music_Icon.jpg",
+        title: "Spotify to YouTube Migration",
+        message: "Playlist migrated successfully!",
+    });
 }
