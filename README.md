@@ -2,7 +2,7 @@
 
 ## Contributors: Qianxu Guo, Leo You
 
-## This chrome extension helps users migrate their Spotify playlists to a Youtube playlist.
+A chrome extension that helps users migrate their Spotify playlists to a Youtube playlist.
 
 ### Our process:
 + Collect user's Spotify playlist link, Spotify authentication, and Google authentication.
